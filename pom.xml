@@ -7,7 +7,7 @@
   <groupId>org.example</groupId>
   <artifactId>flink-kafka</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>jar</packaging>
 
   <name>flink-kafka Maven Webapp</name>
   <!-- FIXME change it to the project's website -->
@@ -15,7 +15,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <flink.version>1.9.3</flink.version>
+    <flink.version>1.11.1</flink.version>
     <flink.scala.version>2.11</flink.scala.version>
   </properties>
 
@@ -24,36 +24,37 @@
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-core</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-json</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-streaming-scala_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-scala -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-scala_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
 
-    <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
+    <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka-0.10 -->
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-sql-connector-kafka_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <artifactId>flink-connector-kafka-0.10_2.11</artifactId>
+      <version>1.11.1</version>
     </dependency>
+
 
 <!--    <dependency>
       <groupId>org.apache.flink</groupId>
@@ -64,14 +65,14 @@
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-connector-elasticsearch6_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-table</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
       <type>pom</type>
     </dependency>
 
@@ -79,34 +80,42 @@
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-table-common</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-table-api-scala -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-table-api-scala_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-table-api-java-bridge_2.11</artifactId>
+      <version>1.11.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-table-planner -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-table-planner_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-table-planner-blink_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-clients -->
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-clients_${flink.scala.version}</artifactId>
-      <version>${flink.version}</version>
+      <version>1.11.1</version>
     </dependency>
 
     <!--flink end-->
@@ -219,6 +228,19 @@
           <source>1.8</source>
           <target>1.8</target>
           <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <finalName>flink-demo-FlinkDemo</finalName>
+          <descriptors>
+            <descriptor>src/main/resources/assembly.xml</descriptor>
+          </descriptors>
+          <outputDirectory>target/</outputDirectory>
+          <appendAssemblyId>true</appendAssemblyId>
         </configuration>
       </plugin>
     </plugins>

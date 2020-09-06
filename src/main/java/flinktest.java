@@ -1,101 +1,68 @@
-import javafx.scene.control.Tab;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.EnvironmentSettings;
-import org.apache.flink.table.api.StreamQueryConfig;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.descriptors.Elasticsearch;
 import org.apache.flink.table.descriptors.Json;
-import org.apache.flink.table.descriptors.Kafka;
 import org.apache.flink.table.descriptors.Schema;
-import org.apache.flink.types.Row;
+
 
 
 public class flinktest {
     public static void main(String args[]) throws Exception{
+//        init table environment
         EnvironmentSettings fsSettings = EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        //TableEnvironment tableEnv = TableEnvironment.create(fsSettings);
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env,fsSettings);
-        Schema schema = new Schema()
-                .field("tag", Types.STRING)
-                .field("num", Types.INT)
-                .field("timed", Types.STRING)
-                .field("name", Types.STRING);
 
-        tableEnv.connect(new Kafka()
-                .version("universal")
-                .topic("flinktest")
-                .property("zookeeper.connec", "localhost:2181")
-                .property("bootstrap.servers", "localhost:9092")
-                .startFromLatest()
-        ).withSchema(schema)
-                .withFormat(new Json()
-                .deriveSchema()
-        ).inAppendMode()
-        .registerTableSource("instance_obj_tb");
+//        Schema schema = new Schema()
+//            .field("tag", DataTypes.STRING())
+//            .field("num", DataTypes.INT())
+//            .field("timed", DataTypes.STRING())
+//            .field("name", DataTypes.STRING());
+
+//        connect to kafka
+        final String KAFKA_SQL = "CREATE TABLE instance_obj_tb ( " +
+                "tag STRING, " +
+                "num INT, " +
+                "timed STRING, " +
+                "name STRING" +
+                ") WITH ( " +
+                "'connector' = 'kafka-0.10', " +
+                "'topic' = 'flinktest', " +
+                "'properties.bootstrap.servers' = '10.0.2.15:9092', " +
+//                "'properties.group.id' = 'testGroup', " +
+                "'format' = 'json', " +
+                "'scan.startup.mode' = 'latest-offset')";
+
+        tableEnv.executeSql(KAFKA_SQL);
 
         // {"tag": "12345", "num":1715, "name": "pv", "timed": "2017-11-26T01:00:00Z"}
-/*       tableEnv.sqlUpdate("CREATE TABLE instance_obj_tb (" +
-            "tag VARCHAR,\n" +
-            "num INT, \n" +
-            "timed VARCHAR, \n" +
-            "name VARCHAR \n" +
-            ") WITH (\n" +
-            "  'connector.type' = 'kafka',\n"+
+        //{"tag": "12346", "num":1720, "name": "ab", "timed": "2017-11-27T01:00:00Z"}
+        //{"tag": "12347", "num":1820, "name": "cd", "timed": "2017-11-28T01:00:00Z"}
 
-            "  'connector.version' = 'universal', \n"+
+//        connect to elastic search
+        final String ES_SQL = "CREATE TABLE esflink ( " +
+                "tag STRING, " +
+                "num INT, " +
+                "timed STRING, " +
+                "name STRING" +
+                ") WITH ( " +
+                "'connector' = 'elasticsearch-6', " +
+                "'hosts' = 'http://172.18.0.2:9200', " +
+                "'index' = 'flink', " +
+                "'document-type' = 'user', " +
+//                "'sink.flush-on-checkpoint' = 'false'," +
+//                "'sink.bulk-flush.max-actions' = '20'," +
+//                "'sink.bulk-flush.max-size' = '20mb'" +
+                "'format' = 'json')";
 
-             " 'connector.topic' = 'flinktest', \n"+
+        tableEnv.executeSql(ES_SQL);
 
-             "  'update-mode' = 'upsert',  \n"+
-
-              " 'connector.properties.0.key' = 'zookeeper.connect', \n"+
-              " 'connector.properties.0.value' = 'localhost:2181',\n"+
-              " 'connector.properties.1.key' = 'bootstrap.servers',\n"+
-              " 'connector.properties.1.value' = 'localhost:9092',\n"+
-              " 'connector.properties.2.key' = 'group.id',\n" +
-              " 'connector.properties.2.value' = 'flink-test',\n" +
-              " 'connector.startup-mode' = 'group-offsets' \n" +
-              ")"
-        );*/
-        Table table = tableEnv.sqlQuery("select tag, num, timed, name from instance_obj_tb");
-        tableEnv.toAppendStream(table, Row.class).print();
-
-        tableEnv.connect(new Elasticsearch()
-                .version("6")
-                .host("localhost", 9200, "http")
-                .index("flink")
-                .documentType("user")
-                .keyDelimiter("_")
-                .keyNullLiteral("null")
-                .failureHandlerFail()
-                .disableFlushOnCheckpoint()
-                .bulkFlushMaxActions(20)
-                // 每个批量请求的缓冲最大值，目前仅支持 MB
-                .bulkFlushMaxSize("20 mb")
-                // 每个批量请求间隔时间
-                .bulkFlushInterval(60000L)
-                // 设置刷新批量请求时要使用的常量回退类型
-                .bulkFlushBackoffConstant()
-                // 设置刷新批量请求时每次回退尝试之间的延迟量（毫秒）
-                .bulkFlushBackoffDelay(30000L)
-                // 设置刷新批量请求时回退尝试的最大重试次数。
-                .bulkFlushBackoffMaxRetries(3)
-
-        ).withFormat(new Json().deriveSchema())
-         .withSchema(schema)
-         .inUpsertMode()
-         .registerTableSink("esflink");
-
-        tableEnv.insertInto(table, "esflink");
-
-        //result.print();
-        tableEnv.execute("flink table execute");
+//        query executed in flink
+        tableEnv.executeSql(
+                "INSERT INTO esflink SELECT tag, num, timed, name FROM instance_obj_tb");
     }
 }
