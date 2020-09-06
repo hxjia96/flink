@@ -32,7 +32,7 @@ public class flinktest {
                 ") WITH ( " +
                 "'connector' = 'kafka-0.10', " +
                 "'topic' = 'flinktest', " +
-                "'properties.bootstrap.servers' = '10.0.2.15:9092', " +
+                "'properties.bootstrap.servers' = 'localhost:9092', " +
 //                "'properties.group.id' = 'testGroup', " +
                 "'format' = 'json', " +
                 "'scan.startup.mode' = 'latest-offset')";
@@ -51,7 +51,7 @@ public class flinktest {
                 "name STRING" +
                 ") WITH ( " +
                 "'connector' = 'elasticsearch-6', " +
-                "'hosts' = 'http://172.18.0.2:9200', " +
+                "'hosts' = 'http://localhost:9200', " +
                 "'index' = 'flink', " +
                 "'document-type' = 'user', " +
 //                "'sink.flush-on-checkpoint' = 'false'," +
